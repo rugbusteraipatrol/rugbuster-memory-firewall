@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rugbuster-memory-firewall"
+version = "0.0.0"
+description = "Preparation scaffold for the RugBusterAI Sibyl Labs Hackathon build."
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+dependencies = [
+  "sibyl-memory-client==0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "sibyl-memory-cli==0.3.23",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rugbuster_memory_firewall"]
+
