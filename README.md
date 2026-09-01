@@ -1,136 +1,180 @@
 # RugBuster Memory Firewall
 
-Built and tested with `sibyl-memory-client==0.8.0` (Lucid). See the upstream
-[0.8.0 release notes](https://github.com/Sibyl-Labs/Sibyl-Memory/blob/main/docs/release-0.8.0-notes.md).
+[![CI](https://github.com/rugbusteraipatrol/rugbuster-memory-firewall/actions/workflows/ci.yml/badge.svg)](https://github.com/rugbusteraipatrol/rugbuster-memory-firewall/actions/workflows/ci.yml)
+[![Sibyl Memory](https://img.shields.io/badge/Sibyl_Memory-0.8.0-19b7a5)](https://github.com/Sibyl-Labs/Sibyl-Memory)
+[![Base Sepolia](https://img.shields.io/badge/Base_Sepolia-verified-0052ff)](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract)
+[![License: MIT](https://img.shields.io/badge/License-MIT-f2c94c.svg)](LICENSE)
 
-An agent pre-sign gate that remembers verified deployer history across sessions.
-Before a wallet, bot, or launch workflow acts on a token, it checks Sibyl Memory
-for evidence linked to the deployer. Verified critical history blocks the
-action; repeated warnings require human review.
+**A pre-sign safety agent that blocks actions a stateless scanner would miss.**
 
-## Why Sibyl Memory is load-bearing
+A token can look clean now while its deployer has harmful verified history on
+other contracts. RugBuster resolves the deployer, recalls that history from a
+fresh Sibyl Memory session, changes the decision, and anchors the resulting
+receipt on Base Sepolia.
 
-`MemoryFirewall.pre_sign()` makes a `MemoryClient.get_entity()` call on every
-decision. A fresh session must recall a persisted deployer profile before it can
-return a verdict. If memory cannot be read, the decision is
-`MEMORY_REQUIRED` and the action must not continue. Removing the memory read
-removes the product's ability to identify repeat deployers.
+> **The load-bearing moment:** current token signals are clean, but a fresh
+> session recalls two verified critical events for the same deployer and returns
+> `BLOCK_REPEAT_DEPLOYER`. Delete Sibyl Memory and no actionable verdict can be
+> produced: the result is `MEMORY_REQUIRED`.
 
-The automated test records a fixture observation, closes the first client,
-opens a fresh client, and proves that persisted history changes the verdict.
-The final submission demo will use independently verifiable real evidence.
+**For judges:** [90-second verification path](JUDGE-GUIDE.md) | [demo script](docs/DEMO-SCRIPT.md) | [rubric evidence](docs/RUBRIC-MATRIX.md)
 
-### Critical path
+## Verified result
 
-- `src/rugbuster_memory_firewall/resolver.py` verifies the token's deployer.
-- `src/rugbuster_memory_firewall/api.py` rejects unresolved or mismatched identity.
-- `src/rugbuster_memory_firewall/firewall.py` reads Sibyl Memory before every verdict.
-- `tests/test_sibyl_sdk.py` contains the deletion and fresh-session tests.
-- `tests/test_api.py` proves the HTTP endpoint fails closed.
+| Claim | Public or reproducible proof |
+| --- | --- |
+| One deployer created the two historical tokens and the recall target | [Evidence artifact](evidence/avax-repeat-deployer-case.json) plus live Routescan verification |
+| Each historical pool received 50 WAVAX and returned 49.981250056079839479 WAVAX within 3 or 6 seconds | [Live verifier](scripts/verify_real_case.py) re-queries Avalanche RPC instead of trusting the artifact |
+| A fresh Sibyl client changes a clean-current-signal decision to `BLOCK` | [Fresh-session test](tests/test_sibyl_sdk.py#L55) and live verifier output |
+| Removing memory prevents an actionable verdict | [Deletion test](tests/test_sibyl_sdk.py#L109) returns `MEMORY_REQUIRED` |
+| The real decision is anchored on Base Sepolia | [Decision transaction](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca) and [machine-readable receipt](evidence/base-sepolia-decision-receipt.json) |
 
-## Prior work
+No token name, scanner label, or wallet owner is treated as proof of fraud.
+Policy decisions rely on addresses, transaction receipts, transfer directions,
+amounts, timestamps, and explicit thresholds.
 
-This project builds on earlier RugBuster research and collectors. Before this
-hackathon, RugBuster already had AVAX and Solana token-risk records, creator
-resolution logic, and a read-only feasibility audit of repeated creator
-clusters. The Sibyl memory integration, load-bearing policy gate, pre-sign API,
-Base Sepolia receipt contract, and hackathon demo are new work for this event.
+## Product flow
 
-Existing risk labels are scanner outputs, not proof that a wallet or person
-committed fraud. A blocking decision requires separately verified critical
-evidence with explicit provenance.
-
-## Preparation setup
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\python -m pip install -e ".[dev]"
-.\.venv\Scripts\python scripts\verify_sibyl.py
-.\.venv\Scripts\python -m pytest
-.\.venv\Scripts\python scripts\demo_fresh_session.py
-.\.venv\Scripts\python scripts\live_resolver_check.py
+```mermaid
+flowchart LR
+    A[Proposed token action] --> B[Resolve deployer]
+    B --> C{Sibyl Memory available?}
+    C -- No --> D[MEMORY_REQUIRED]
+    C -- Yes --> E[Recall deployer entity]
+    E --> F{Verified history?}
+    F -- Critical event --> G[BLOCK]
+    F -- Repeated warnings --> H[WARN]
+    F -- Clean history --> I[ALLOW]
+    G --> J[Base decision receipt]
+    H --> J
+    I --> J
 ```
 
-The verification script uses a temporary database and does not modify the
-user's real `~/.sibyl-memory/memory.db`. `demo_fresh_session.py` is explicitly a
-synthetic developer smoke test, not submission evidence. It uses
-`demo-memory.db` by default; pass `--db <path>` to choose another location.
+The gate is deterministic. An LLM cannot override it, and an unavailable
+resolver or memory layer fails closed.
 
-## Reproduce the real AVAX case
+## Why memory is load-bearing
 
-The submission evidence is stored in
-`evidence/avax-repeat-deployer-case.json`. It names every contract, pool,
-creation transaction, WAVAX transfer, amount, and timestamp used by the demo.
-The verifier does not trust the stored conclusion: it re-queries Routescan and
-the public Avalanche RPC, validates successful receipts, confirms that the
-creator is an externally owned account, and checks the transfer directions,
-amounts, return ratio, and elapsed time.
+Every actionable decision follows this critical path:
 
-```powershell
-.\.venv\Scripts\python scripts\verify_real_case.py
+1. The API independently resolves the token deployer in
+   [`api.py`](src/rugbuster_memory_firewall/api.py#L95).
+2. `pre_sign()` writes HOT analysis state and REFERENCE policy state, then
+   performs the mandatory WARM entity read in
+   [`firewall.py`](src/rugbuster_memory_firewall/firewall.py#L219).
+3. Recalled COLD-backed observations change the verdict in
+   [`firewall.py`](src/rugbuster_memory_firewall/firewall.py#L260).
+4. Any memory failure returns only `MEMORY_REQUIRED` in
+   [`firewall.py`](src/rugbuster_memory_firewall/firewall.py#L302).
+
+The four Sibyl tiers do real work:
+
+| Tier | Persisted state | Decision role |
+| --- | --- | --- |
+| HOT | Current analysis and completion state | Tracks the in-flight session and resulting decision hash |
+| WARM | Deployer entity with deduplicated verified observations | Supplies the history used by policy thresholds |
+| COLD | Append-only observation and decision journal | Preserves event order and audit context |
+| REFERENCE | Versioned policy thresholds | Binds recall to the exact policy version |
+
+Without Sibyl Memory, RugBuster can still resolve a deployer and inspect current
+signals, but it cannot make the product's claimed history-aware decision. That
+is enforced in code and tested, not left to presentation.
+
+## Reproduce it
+
+Requirements: Python 3.12 and Node.js 22+.
+
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\python -m pip install -e ".[dev]"
+.venv/bin/python -m pip install -e ".[dev]"
+npm ci
 ```
 
-After live verification, the script writes the two historical observations to
-a temporary Sibyl database, closes that client, opens a fresh client, and asks
-for a clean-current-signal decision on a different token from the same creator.
-The expected result is `BLOCK` with `BLOCK_REPEAT_DEPLOYER`. Token names in the
-artifact are display hints only and are deliberately marked unverified; policy
-decisions use addresses and public transaction evidence.
+Run the deterministic judge suite:
 
-## Run the pre-sign API
+```bash
+# Windows
+.venv\Scripts\python scripts\judge_check.py
 
-```powershell
-$env:RUGBUSTER_MEMORY_DB = ".\runtime-memory.db"
-.\.venv\Scripts\python -m uvicorn rugbuster_memory_firewall.api:create_app --factory --host 127.0.0.1 --port 8765
+# macOS / Linux
+.venv/bin/python scripts/judge_check.py
 ```
 
-Open `http://127.0.0.1:8765/docs` for the interactive API. `POST /v1/pre-sign`
-requires a supported chain, token address, current RugBuster risk, action, and
-session ID. A caller-supplied deployer is optional, but when present it must
-match the independently resolved address.
+Add `--live` to re-query Routescan and Avalanche RPC and reproduce the real
+cross-session case. The live path requires network access but no paid API key.
 
-AVAX resolution uses Routescan's contract-creation endpoint. Solana resolution
-uses the top-level creator from a RugCheck full report. The API fails closed
-when either provider cannot return a validated creator. Set `ROUTESCAN_API_KEY`
-only if a higher Routescan rate limit is needed; the free endpoint is keyless.
-
-The policy binds each decision to the requested token and a canonical hash of
-the proposed action. Resolver evidence, recalled history, reason codes, memory
-evidence hash, decision hash, and the optional Base transaction URL are returned
-in the response.
-
-## Base Sepolia decision receipts
-
-`DecisionReceiptRegistry.sol` provides the executed onchain action for the Base
-partner track. It stores the decision hash, Sibyl memory-evidence hash, exact
-`ALLOW`/`WARN`/`BLOCK` verdict, block timestamp, submitter, and readable policy
-version. A decision hash can be recorded once and can never be overwritten.
-
-```powershell
-npm install
-npm run base:compile
-npm run base:test
-npx hardhat keystore set BASE_SEPOLIA_PRIVATE_KEY
-npm run base:deploy
+```bash
+.venv/bin/python scripts/judge_check.py --live
 ```
 
-The keystore command encrypts the signing key outside tracked source files. The
-deployer needs a small amount of Base Sepolia ETH. After deployment, set the
-public contract address as `BASE_RECEIPT_REGISTRY`, then provide `DECISION_HASH`,
-`MEMORY_EVIDENCE_HASH`, `VERDICT`, and `POLICY_VERSION` before running
-`npm run base:record`. The recorder refuses any network except Base Sepolia
-chain ID `84532` and prints the public explorer URL after the transaction mines.
+Expected high-signal output:
 
-The registry is deployed and source-verified on Base Sepolia:
+```text
+23 passed
+4 passing
+deletion_gate=PASSED verdict=MEMORY_REQUIRED
+fresh_session_decision={"verdict":"BLOCK","reason_codes":["BLOCK_REPEAT_DEPLOYER"],"evidence_count":2,...}
+```
 
-- Contract: `0x5F30276B3A5079E088Ec3072884286de5a868355`
-- [Deployment transaction](https://base-sepolia.blockscout.com/tx/0x6b6e8115983575525143661c5e3e488e5f8b0e023b6a69e06ba8743c8c19f39c)
-- [Verified contract source](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract)
-- Machine-readable deployment evidence: `evidence/base-sepolia-deployment.json`
+## Pre-sign API
 
-A real repeated-deployer `BLOCK` decision has also been recorded on-chain:
+```bash
+export RUGBUSTER_MEMORY_DB=./runtime-memory.db
+.venv/bin/python -m uvicorn rugbuster_memory_firewall.api:create_app \
+  --factory --host 127.0.0.1 --port 8765
+```
 
-- [Decision receipt transaction](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca)
-- Decision hash: `0x4db586c8b62e13b6d110487664444439232355f39ba9f3cc824f50ecd18f1f6d`
-- Memory evidence hash: `0xdf7f2cd0b47ebb70e43d0dfa9a8a3054e287bf35527b5f128d163507addb2a7a`
-- Machine-readable receipt evidence: `evidence/base-sepolia-decision-receipt.json`
+Open `http://127.0.0.1:8765/docs`. `POST /v1/pre-sign` accepts a chain, token
+address, current risk, proposed action, and session ID. A caller-supplied
+deployer is optional, but it must match independent resolution when supplied.
+
+Supported identity resolution:
+
+- Avalanche: Routescan contract-creation record.
+- Solana: top-level creator from a RugCheck full report.
+
+The response contains the verdict, stable reason codes, recalled history,
+resolver provenance, action hash, memory-evidence hash, decision hash, policy
+version, and optional Base receipt URL.
+
+## Base integration
+
+[`DecisionReceiptRegistry.sol`](contracts/DecisionReceiptRegistry.sol) records
+an immutable receipt containing the decision hash, memory-evidence hash,
+`ALLOW`/`WARN`/`BLOCK` verdict, submitter, block timestamp, and policy version.
+A decision hash cannot be overwritten.
+
+- Network: Base Sepolia (`84532`)
+- Contract: [`0x5F30276B3A5079E088Ec3072884286de5a868355`](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract)
+- Deployment: [`0x6b6e...c19f39c`](https://base-sepolia.blockscout.com/tx/0x6b6e8115983575525143661c5e3e488e5f8b0e023b6a69e06ba8743c8c19f39c)
+- Real BLOCK receipt: [`0x13fd...3412eca`](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca)
+- Source verification: [Blockscout](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract) and [Sourcify](https://repo.sourcify.dev/84532/0x5F30276B3A5079E088Ec3072884286de5a868355/)
+
+## Prior work declaration
+
+Before this hackathon, RugBuster had multichain token-risk research, collectors,
+and deployer-resolution experience. The public prior work includes the
+[`rugbuster-multichain`](https://github.com/rugbusteraipatrol/rugbuster-multichain)
+scanner and the
+[`rugbuster-solana-goplus-benchmark`](https://github.com/rugbusteraipatrol/rugbuster-solana-goplus-benchmark)
+evidence benchmark.
+
+New work for the Sibyl Labs Hackathon includes the Sibyl integration,
+load-bearing memory policy, cross-session decision flow, deletion gate,
+pre-sign API, reproducible Avalanche case, Base receipt contract, and demo.
+The preparation scaffold and architecture notes began on August 29, 2026; core
+implementation commits begin in the September 1-10 build window.
+
+## Scope and safety
+
+This is a hackathon prototype, not financial advice and not an allegation about
+any person or wallet. `BLOCK` means that configured deterministic policy found
+verified on-chain behavior matching its threshold. Production use would require
+broader source coverage, appeals and expiry policy, monitoring, and an external
+security review.
+
+## Stack
+
+Python 3.12, FastAPI, Sibyl Memory Client 0.8.0 (Lucid), Solidity 0.8.34,
+Hardhat 3, and Base Sepolia. MIT licensed.
