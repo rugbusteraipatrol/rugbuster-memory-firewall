@@ -1,0 +1,20 @@
+{
+  "name": "rugbuster-memory-firewall",
+  "version": "0.1.0",
+  "description": "Base Sepolia audit receipts for the RugBuster Memory Firewall.",
+  "private": true,
+  "scripts": {
+    "base:compile": "hardhat compile",
+    "base:test": "hardhat test",
+    "base:deploy": "hardhat ignition deploy ignition/modules/DecisionReceiptRegistry.ts --network baseSepolia",
+    "base:record": "hardhat run scripts/record-decision.ts --network baseSepolia"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.7",
+    "hardhat": "^3.15.0"
+  }
+}

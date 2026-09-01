@@ -98,3 +98,25 @@ The policy binds each decision to the requested token and a canonical hash of
 the proposed action. Resolver evidence, recalled history, reason codes, memory
 evidence hash, decision hash, and the optional Base transaction URL are returned
 in the response.
+
+## Base Sepolia decision receipts
+
+`DecisionReceiptRegistry.sol` provides the executed onchain action for the Base
+partner track. It stores the decision hash, Sibyl memory-evidence hash, exact
+`ALLOW`/`WARN`/`BLOCK` verdict, block timestamp, submitter, and readable policy
+version. A decision hash can be recorded once and can never be overwritten.
+
+```powershell
+npm install
+npm run base:compile
+npm run base:test
+npx hardhat keystore set BASE_SEPOLIA_PRIVATE_KEY
+npm run base:deploy
+```
+
+The keystore command encrypts the signing key outside tracked source files. The
+deployer needs a small amount of Base Sepolia ETH. After deployment, set the
+public contract address as `BASE_RECEIPT_REGISTRY`, then provide `DECISION_HASH`,
+`MEMORY_EVIDENCE_HASH`, `VERDICT`, and `POLICY_VERSION` before running
+`npm run base:record`. The recorder refuses any network except Base Sepolia
+chain ID `84532` and prints the public explorer URL after the transaction mines.
