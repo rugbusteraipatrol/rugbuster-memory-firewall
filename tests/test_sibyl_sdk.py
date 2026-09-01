@@ -6,7 +6,7 @@ from rugbuster_memory_firewall import MemoryFirewall, VerifiedObservation
 
 
 def _close(memory: MemoryClient) -> None:
-    # MemoryClient 0.7.0 does not expose a public close method.
+    # MemoryClient 0.8.0 does not expose a public close method.
     memory._storage.close()  # type: ignore[attr-defined]
 
 

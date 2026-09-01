@@ -1,5 +1,8 @@
 # RugBuster Memory Firewall
 
+Built and tested with `sibyl-memory-client==0.8.0` (Lucid). See the upstream
+[0.8.0 release notes](https://github.com/Sibyl-Labs/Sibyl-Memory/blob/main/docs/release-0.8.0-notes.md).
+
 An agent pre-sign gate that remembers verified deployer history across sessions.
 Before a wallet, bot, or launch workflow acts on a token, it checks Sibyl Memory
 for evidence linked to the deployer. Verified critical history blocks the

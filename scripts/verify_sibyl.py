@@ -33,7 +33,7 @@ def main() -> None:
         print(f"cap_used_percent={db_bytes / FREE_TIER_CAP_BYTES * 100:.4f}")
         print(f"fresh_client_recall_ok={bool(recalled and recalled.get('body', {}).get('status') == 'ready')}")
 
-        # MemoryClient 0.7.0 has no public close method. Close its storage handle
+        # MemoryClient 0.8.0 has no public close method. Close its storage handle
         # so Windows can remove the temporary verification database cleanly.
         fresh_memory._storage.close()  # type: ignore[attr-defined]
 

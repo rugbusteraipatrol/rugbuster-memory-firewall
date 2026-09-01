@@ -11,14 +11,14 @@ license = { text = "MIT" }
 dependencies = [
   "fastapi==0.141.1",
   "httpx==0.28.1",
-  "sibyl-memory-client==0.7.0",
+  "sibyl-memory-client==0.8.0",
   "uvicorn==0.52.4",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3,<9",
-  "sibyl-memory-cli==0.3.23",
+  "sibyl-memory-cli==0.4.0",
 ]
 
 [tool.pytest.ini_options]

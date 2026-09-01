@@ -146,4 +146,3 @@ async def test_health_declares_memory_required(tmp_path: Path) -> None:
     _close(memory)
 
     assert response.json() == {"status": "ok", "memory_policy": "required"}
-
