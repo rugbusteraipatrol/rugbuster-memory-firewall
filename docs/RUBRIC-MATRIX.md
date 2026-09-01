@@ -29,7 +29,7 @@ No "first" claim is made without a documented competitive review.
 
 ## Technical execution - 20 points
 
-- 23 Python tests cover memory behavior, API behavior, resolver validation,
+- 26 Python tests cover memory behavior, demo proofs, API behavior, resolver validation,
   isolation, deduplication, and fail-closed states.
 - 4 Solidity tests cover receipt immutability and invalid inputs.
 - Real evidence is machine-readable and independently re-queried.

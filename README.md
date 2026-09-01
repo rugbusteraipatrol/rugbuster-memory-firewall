@@ -19,6 +19,19 @@ receipt on Base Sepolia.
 
 **For judges:** [90-second verification path](JUDGE-GUIDE.md) | [demo script](docs/DEMO-SCRIPT.md) | [rubric evidence](docs/RUBRIC-MATRIX.md)
 
+## Judge Console
+
+Run the visual proof console:
+
+```bash
+.venv/bin/python -m uvicorn rugbuster_memory_firewall.demo:app --port 8787
+```
+
+On Windows use `.venv\Scripts\python` in place of `.venv/bin/python`, then
+open `http://127.0.0.1:8787`. The console runs the real live verifier, the
+memory-deletion gate, and public Base receipt verification from three explicit
+controls.
+
 ## Verified result
 
 | Claim | Public or reproducible proof |
@@ -111,7 +124,7 @@ cross-session case. The live path requires network access but no paid API key.
 Expected high-signal output:
 
 ```text
-23 passed
+26 passed
 4 passing
 deletion_gate=PASSED verdict=MEMORY_REQUIRED
 fresh_session_decision={"verdict":"BLOCK","reason_codes":["BLOCK_REPEAT_DEPLOYER"],"evidence_count":2,...}

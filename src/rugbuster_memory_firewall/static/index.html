@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RugBuster Judge Console</title>
+    <meta name="description" content="Verify a load-bearing Sibyl Memory decision and its Base receipt.">
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">RB</span>
+        <div>
+          <strong>RugBuster</strong>
+          <span>Memory Firewall</span>
+        </div>
+      </div>
+      <div class="network-status">
+        <span class="status-dot"></span>
+        Base Sepolia
+      </div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">Judge Console / Real Avalanche Evidence</p>
+          <h1>Would a clean token action pass if its deployer has critical history?</h1>
+          <p class="lede">Run the evidence chain. A fresh Sibyl session must remember verified history before the firewall can issue an actionable verdict.</p>
+        </div>
+        <div class="case-meta">
+          <span>Case</span>
+          <strong id="case-id">Loading...</strong>
+        </div>
+      </section>
+
+      <section class="signal-strip" aria-label="Decision summary">
+        <div>
+          <span>Current signal</span>
+          <strong class="clean">CLEAN</strong>
+        </div>
+        <div>
+          <span>Recalled events</span>
+          <strong id="event-count">2 CRITICAL</strong>
+        </div>
+        <div>
+          <span>Fresh-session verdict</span>
+          <strong class="blocked" id="final-verdict">NOT RUN</strong>
+        </div>
+        <div>
+          <span>On-chain receipt</span>
+          <strong class="pending" id="receipt-status">CHECK PENDING</strong>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="proof-flow">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Critical path</p>
+              <h2>Three proofs, one decision</h2>
+            </div>
+            <button class="primary" id="run-live">Run live proof</button>
+          </div>
+
+          <ol class="steps">
+            <li class="step" id="step-evidence">
+              <span class="step-number">01</span>
+              <div>
+                <h3>Verify public history</h3>
+                <p>Re-query creator records, receipts, WAVAX transfers, timestamps, and thresholds.</p>
+                <div class="event-list" id="event-list">
+                  <p class="muted">Waiting for live verification.</p>
+                </div>
+              </div>
+              <span class="step-state">READY</span>
+            </li>
+            <li class="step" id="step-recall">
+              <span class="step-number">02</span>
+              <div>
+                <h3>Open a fresh Sibyl session</h3>
+                <p>Close the writer, recall the deployer in a new client, then evaluate a different token.</p>
+                <code id="decision-reason">No decision yet</code>
+              </div>
+              <span class="step-state">READY</span>
+            </li>
+            <li class="step" id="step-base">
+              <span class="step-number">03</span>
+              <div>
+                <h3>Verify the Base receipt</h3>
+                <p>Decode the executed contract call and match both decision and memory-evidence hashes.</p>
+                <a id="explorer-link" href="#" target="_blank" rel="noreferrer">Open Blockscout receipt</a>
+              </div>
+              <div class="step-actions">
+                <span class="step-state">READY</span>
+                <button class="secondary" id="verify-base">Verify</button>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <aside class="memory-panel">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Sibyl Memory 0.8.0</p>
+              <h2>Load-bearing state</h2>
+            </div>
+          </div>
+          <div class="tier-table">
+            <div><strong>HOT</strong><span>analysis session</span><b>ACTIVE</b></div>
+            <div><strong>WARM</strong><span>deployer entity</span><b>READ</b></div>
+            <div><strong>COLD</strong><span>event journal</span><b>2 EVENTS</b></div>
+            <div><strong>REF</strong><span>policy v0.1.0</span><b>BOUND</b></div>
+          </div>
+
+          <div class="deletion-test">
+            <p class="eyebrow">Gate test</p>
+            <h3>Delete the memory layer</h3>
+            <p>If the product still returns ALLOW, WARN, or BLOCK, it fails the hackathon gate.</p>
+            <button class="danger" id="delete-memory">Run deletion test</button>
+            <output id="deletion-output">Not run</output>
+          </div>
+
+          <dl class="identity">
+            <div><dt>Chain</dt><dd>Avalanche C-Chain</dd></div>
+            <div><dt>Deployer</dt><dd id="deployer">Loading...</dd></div>
+            <div><dt>Recall target</dt><dd id="recall-target">Loading...</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </main>
+
+    <footer>
+      <span>Deterministic policy. Public evidence. No model-generated allegations.</span>
+      <a href="https://github.com/rugbusteraipatrol/rugbuster-memory-firewall" target="_blank" rel="noreferrer">View source</a>
+    </footer>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
