@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "rugbuster-memory-firewall"
-version = "0.0.0"
+version = "0.1.0"
 description = "Preparation scaffold for the RugBusterAI Sibyl Labs Hackathon build."
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
@@ -24,4 +24,3 @@ addopts = "-ra"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rugbuster_memory_firewall"]
-
