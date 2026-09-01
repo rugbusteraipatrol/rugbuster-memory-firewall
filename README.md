@@ -19,6 +19,8 @@ receipt on Base Sepolia.
 
 **For judges:** [90-second verification path](JUDGE-GUIDE.md) | [demo script](docs/DEMO-SCRIPT.md) | [rubric evidence](docs/RUBRIC-MATRIX.md)
 
+![RugBuster Judge Console showing a clean current signal, recalled critical history, a BLOCK verdict, and a verified Base receipt](docs/assets/judge-console.jpg)
+
 ## Judge Console
 
 Run the visual proof console:
