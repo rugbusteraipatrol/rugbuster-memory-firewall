@@ -56,6 +56,27 @@ user's real `~/.sibyl-memory/memory.db`. `demo_fresh_session.py` is explicitly a
 synthetic developer smoke test, not submission evidence. It uses
 `demo-memory.db` by default; pass `--db <path>` to choose another location.
 
+## Reproduce the real AVAX case
+
+The submission evidence is stored in
+`evidence/avax-repeat-deployer-case.json`. It names every contract, pool,
+creation transaction, WAVAX transfer, amount, and timestamp used by the demo.
+The verifier does not trust the stored conclusion: it re-queries Routescan and
+the public Avalanche RPC, validates successful receipts, confirms that the
+creator is an externally owned account, and checks the transfer directions,
+amounts, return ratio, and elapsed time.
+
+```powershell
+.\.venv\Scripts\python scripts\verify_real_case.py
+```
+
+After live verification, the script writes the two historical observations to
+a temporary Sibyl database, closes that client, opens a fresh client, and asks
+for a clean-current-signal decision on a different token from the same creator.
+The expected result is `BLOCK` with `BLOCK_REPEAT_DEPLOYER`. Token names in the
+artifact are display hints only and are deliberately marked unverified; policy
+decisions use addresses and public transaction evidence.
+
 ## Run the pre-sign API
 
 ```powershell

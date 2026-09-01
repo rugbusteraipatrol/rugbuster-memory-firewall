@@ -41,6 +41,45 @@ class VerifiedObservation:
     evidence_id: str
 
     @classmethod
+    def at(
+        cls,
+        *,
+        kind: ObservationKind,
+        source: str,
+        evidence_uri: str,
+        details: str,
+        observed_at: str,
+    ) -> "VerifiedObservation":
+        if kind not in {"warning", "critical"}:
+            raise ValueError("kind must be 'warning' or 'critical'")
+        if not source.strip() or not evidence_uri.strip() or not details.strip():
+            raise ValueError("source, evidence_uri, and details are required")
+        try:
+            parsed = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
+        except ValueError as error:
+            raise ValueError("observed_at must be an ISO-8601 timestamp") from error
+        if parsed.tzinfo is None:
+            raise ValueError("observed_at must include a timezone")
+        canonical_observed_at = parsed.astimezone(UTC).isoformat()
+        evidence_id = _canonical_hash(
+            {
+                "kind": kind,
+                "source": source.strip(),
+                "evidence_uri": evidence_uri.strip(),
+                "details": details.strip(),
+                "observed_at": canonical_observed_at,
+            }
+        )
+        return cls(
+            kind=kind,
+            source=source.strip(),
+            evidence_uri=evidence_uri.strip(),
+            observed_at=canonical_observed_at,
+            details=details.strip(),
+            evidence_id=evidence_id,
+        )
+
+    @classmethod
     def now(
         cls,
         *,
@@ -49,26 +88,12 @@ class VerifiedObservation:
         evidence_uri: str,
         details: str,
     ) -> "VerifiedObservation":
-        if kind not in {"warning", "critical"}:
-            raise ValueError("kind must be 'warning' or 'critical'")
-        if not source.strip() or not evidence_uri.strip() or not details.strip():
-            raise ValueError("source, evidence_uri, and details are required")
-        observed_at = _utc_now()
-        evidence_id = _canonical_hash(
-            {
-                "kind": kind,
-                "source": source.strip(),
-                "evidence_uri": evidence_uri.strip(),
-                "details": details.strip(),
-            }
-        )
-        return cls(
+        return cls.at(
             kind=kind,
-            source=source.strip(),
-            evidence_uri=evidence_uri.strip(),
-            observed_at=observed_at,
-            details=details.strip(),
-            evidence_id=evidence_id,
+            source=source,
+            evidence_uri=evidence_uri,
+            details=details,
+            observed_at=_utc_now(),
         )
 
 

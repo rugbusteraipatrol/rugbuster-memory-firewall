@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from sibyl_memory_client import MemoryClient
 
 from rugbuster_memory_firewall import MemoryFirewall, VerifiedObservation
@@ -147,6 +149,29 @@ def test_deployer_entities_are_isolated(tmp_path: Path) -> None:
 def test_chain_specific_address_normalization() -> None:
     assert MemoryFirewall.deployer_key("Avalanche", "0xAbC") == "avax:0xabc"
     assert MemoryFirewall.deployer_key("solana", "AbC123") == "solana:AbC123"
+
+
+def test_observation_at_normalizes_verified_event_time() -> None:
+    observation = VerifiedObservation.at(
+        kind="critical",
+        source="public-chain-test",
+        evidence_uri="https://example.test/tx/verified",
+        details="A historical event verified from public chain data.",
+        observed_at="2026-06-23T07:45:12Z",
+    )
+
+    assert observation.observed_at == "2026-06-23T07:45:12+00:00"
+
+
+def test_observation_at_rejects_timestamp_without_timezone() -> None:
+    with pytest.raises(ValueError, match="timezone"):
+        VerifiedObservation.at(
+            kind="critical",
+            source="public-chain-test",
+            evidence_uri="https://example.test/tx/verified",
+            details="A historical event verified from public chain data.",
+            observed_at="2026-06-23T07:45:12",
+        )
 
 
 def test_decision_uses_all_required_memory_tiers(tmp_path: Path) -> None:

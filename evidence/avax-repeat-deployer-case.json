@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "case_id": "avax-repeat-deployer-2026-06-23",
+  "chain": "avax",
+  "chain_id": 43114,
+  "deployer": "0x1f6908b79ae1f2c87c16f0facc9084d93601c8eb",
+  "wavax_contract": "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
+  "policy": {
+    "maximum_elapsed_seconds": 15,
+    "minimum_return_ratio": 0.95
+  },
+  "historical_events": [
+    {
+      "token_address": "0xf9a850350d0dc1ec76ab4757e0c9ea22d6017362",
+      "token_name_unverified": "Gugo",
+      "creation_tx": "0xdef28e0422c624509e5ec5a8dcf5880ce3f99c23e02f84a14e050eaa8b677281",
+      "pool_address": "0x97ea94c825ea0fbf8636e6c36812a19ad5869128",
+      "liquidity_add": {
+        "tx": "0xa7d2c740cddc95ebcf1bbe5b5941f959ccf0e23f9a42141e7ded60ce61a42b69",
+        "timestamp": 1782193110,
+        "wavax_wei": "50000000000000000000"
+      },
+      "liquidity_return": {
+        "tx": "0x3abc93bb12c8251ca45159cb32f7ee2f20523f8bea6ae2da6a1a83e40c6b1f02",
+        "timestamp": 1782193113,
+        "wavax_wei": "49981250056079839479"
+      }
+    },
+    {
+      "token_address": "0x0fa38de9455b7d3427fb8dd739e360ed3b3b17ca",
+      "token_name_unverified": "ELLIE",
+      "creation_tx": "0x5bc51f9f81881b48323a4a5125a6410e10c405fc7335318c031dabb2e6431cab",
+      "pool_address": "0xc51ca3acfe4a1baaf61c372ea8ba7232cf6c30b0",
+      "liquidity_add": {
+        "tx": "0xc95a33f1b91cf79caf0462b087d5de2b0d9473a4b0e9d245c43a70eab074e65a",
+        "timestamp": 1782200706,
+        "wavax_wei": "50000000000000000000"
+      },
+      "liquidity_return": {
+        "tx": "0x20706395088a2b774a8bdc870fa7eda7a0d01bc1bb3740adf84d30c1036897fe",
+        "timestamp": 1782200712,
+        "wavax_wei": "49981250056079839479"
+      }
+    }
+  ],
+  "recall_target": {
+    "token_address": "0xb369f24c85e14f1fe4803114b8b1ed44b83d19c2",
+    "token_name_unverified": "XPi",
+    "creation_tx": "0xca8156b261a4cfe7769b7b80a162fbc2d04c91f1e6ddad62e29b366ca9a2d224"
+  },
+  "source_endpoints": {
+    "routescan": "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api",
+    "avalanche_rpc": "https://api.avax.network/ext/bc/C/rpc",
+    "explorer_tx_prefix": "https://snowtrace.io/tx/"
+  }
+}
