@@ -108,11 +108,20 @@ the firewall without enough context to decide and forces `MEMORY_REQUIRED`.
 Requirements: Python 3.12 and Node.js 22+.
 
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\python -m pip install -e ".[dev]"
+# Windows
+py -3.12 -m venv .venv
+.venv\Scripts\python -m pip install -e ".[dev]"
+
+# macOS / Linux (where python3.12 is installed)
+python3.12 -m venv .venv
 .venv/bin/python -m pip install -e ".[dev]"
+
+# All platforms
 npm ci
 ```
+
+The package intentionally requires Python 3.12; Python 3.13 is not part of the
+verified hackathon environment.
 
 Run the deterministic judge suite:
 
