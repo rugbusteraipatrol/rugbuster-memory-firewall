@@ -1,0 +1,21 @@
+{
+  "network": "Base Sepolia",
+  "chain_id": 84532,
+  "contract_name": "DecisionReceiptRegistry",
+  "contract_address": "0x5F30276B3A5079E088Ec3072884286de5a868355",
+  "deployer": "0x66065488Af8FbeB34705f966FA43b1BEb4015E83",
+  "deployment_tx": "0x6b6e8115983575525143661c5e3e488e5f8b0e023b6a69e06ba8743c8c19f39c",
+  "deployment_block": 46250604,
+  "status": "success",
+  "gas_used": 711357,
+  "effective_gas_price_wei": 5970000,
+  "deployment_cost_eth": "0.00000424680129",
+  "runtime_bytecode_bytes": 3053,
+  "runtime_bytecode_keccak256": "0x993fb2eeac70b1990eb787abd04825e303fd4b69b58043cd82fdee54a364f897",
+  "compiler": "solc 0.8.34",
+  "optimizer_runs": 200,
+  "evm_version": "osaka",
+  "explorer_tx": "https://base-sepolia.blockscout.com/tx/0x6b6e8115983575525143661c5e3e488e5f8b0e023b6a69e06ba8743c8c19f39c",
+  "explorer_contract": "https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract",
+  "verified_source": "https://repo.sourcify.dev/84532/0x5F30276B3A5079E088Ec3072884286de5a868355/"
+}

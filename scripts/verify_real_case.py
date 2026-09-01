@@ -209,6 +209,8 @@ def recall_demo(case: dict[str, Any], verified: list[dict[str, Any]], db_path: P
                 "verdict": decision.verdict,
                 "reason_codes": decision.reason_codes,
                 "evidence_count": decision.evidence_count,
+                "memory_evidence_hash": decision.memory_evidence_hash,
+                "policy_version": decision.policy_version,
                 "decision_hash": decision.decision_hash,
             },
             separators=(",", ":"),

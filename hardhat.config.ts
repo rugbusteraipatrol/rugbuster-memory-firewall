@@ -8,13 +8,13 @@ export default defineConfig({
       default: {
         version: "0.8.34",
         settings: {
-          evmVersion: "cancun",
+          evmVersion: "osaka",
         },
       },
       production: {
         version: "0.8.34",
         settings: {
-          evmVersion: "cancun",
+          evmVersion: "osaka",
           optimizer: {
             enabled: true,
             runs: 200,

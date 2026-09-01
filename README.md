@@ -120,3 +120,17 @@ public contract address as `BASE_RECEIPT_REGISTRY`, then provide `DECISION_HASH`
 `MEMORY_EVIDENCE_HASH`, `VERDICT`, and `POLICY_VERSION` before running
 `npm run base:record`. The recorder refuses any network except Base Sepolia
 chain ID `84532` and prints the public explorer URL after the transaction mines.
+
+The registry is deployed and source-verified on Base Sepolia:
+
+- Contract: `0x5F30276B3A5079E088Ec3072884286de5a868355`
+- [Deployment transaction](https://base-sepolia.blockscout.com/tx/0x6b6e8115983575525143661c5e3e488e5f8b0e023b6a69e06ba8743c8c19f39c)
+- [Verified contract source](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract)
+- Machine-readable deployment evidence: `evidence/base-sepolia-deployment.json`
+
+A real repeated-deployer `BLOCK` decision has also been recorded on-chain:
+
+- [Decision receipt transaction](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca)
+- Decision hash: `0x4db586c8b62e13b6d110487664444439232355f39ba9f3cc824f50ecd18f1f6d`
+- Memory evidence hash: `0xdf7f2cd0b47ebb70e43d0dfa9a8a3054e287bf35527b5f128d163507addb2a7a`
+- Machine-readable receipt evidence: `evidence/base-sepolia-decision-receipt.json`

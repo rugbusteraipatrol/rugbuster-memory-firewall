@@ -1,0 +1,20 @@
+{
+  "network": "Base Sepolia",
+  "chain_id": 84532,
+  "contract_address": "0x5F30276B3A5079E088Ec3072884286de5a868355",
+  "transaction_hash": "0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca",
+  "block_number": 46250991,
+  "status": "success",
+  "gas_used": 338906,
+  "effective_gas_price_wei": 6000001,
+  "transaction_cost_eth": "0.000002033436338906",
+  "decision_hash": "0x4db586c8b62e13b6d110487664444439232355f39ba9f3cc824f50ecd18f1f6d",
+  "memory_evidence_hash": "0xdf7f2cd0b47ebb70e43d0dfa9a8a3054e287bf35527b5f128d163507addb2a7a",
+  "verdict": "BLOCK",
+  "verdict_value": 2,
+  "recorded_at": 1788270270,
+  "recorded_at_iso": "2026-09-01T13:44:30.000Z",
+  "submitter": "0x66065488Af8FbeB34705f966FA43b1BEb4015E83",
+  "policy_version": "rugbuster-memory-firewall/0.1.0",
+  "explorer_tx": "https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca"
+}
