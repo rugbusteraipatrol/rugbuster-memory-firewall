@@ -9,7 +9,10 @@ description = "Preparation scaffold for the RugBusterAI Sibyl Labs Hackathon bui
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
 dependencies = [
+  "fastapi==0.141.1",
+  "httpx==0.28.1",
   "sibyl-memory-client==0.7.0",
+  "uvicorn==0.52.4",
 ]
 
 [project.optional-dependencies]

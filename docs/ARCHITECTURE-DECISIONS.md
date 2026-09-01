@@ -9,6 +9,11 @@
   can independently determine it.
 - An unresolved or conflicting deployer fails closed.
 
+AVAX creator resolution uses Routescan's `getcontractcreation` result and
+validates the returned contract, creator, and creation transaction hash. Solana
+uses only RugCheck's top-level `creator`/`deployer`; a market-level deployer is
+not accepted as identity evidence.
+
 ## Evidence levels
 
 - Scanner labels are historical risk signals, not allegations or proof.
@@ -29,6 +34,8 @@
 Only four top-level verdicts exist: `ALLOW`, `WARN`, `BLOCK`, and
 `MEMORY_REQUIRED`. Detailed explanations are stable reason codes. AVAX/EVM
 addresses are normalized to lowercase; Solana addresses remain case-sensitive.
+Every decision includes the token address and canonical action hash so it cannot
+be reused as authorization for a different proposed action.
 
 The COLD journal is append-only by application design. It is not described as
 cryptographically immutable. A Base Sepolia receipt can anchor decision and

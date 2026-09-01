@@ -27,8 +27,10 @@ def main() -> None:
     firewall = MemoryFirewall(writer)
     before = firewall.pre_sign(
         chain="avax",
+        token_address="fixture-token-before",
         deployer="0xDemoDeployer",
         current_risk="clean",
+        action={"type": "fixture_sign", "token": "fixture-token"},
         session_id="fixture-before",
     )
     firewall.record_observation(
@@ -47,8 +49,10 @@ def main() -> None:
     fresh_client = MemoryClient.local(args.db)
     after = MemoryFirewall(fresh_client).pre_sign(
         chain="avax",
+        token_address="fixture-token-after",
         deployer="0xDemoDeployer",
         current_risk="clean",
+        action={"type": "fixture_sign", "token": "fixture-token"},
         session_id="fixture-after",
     )
     close(fresh_client)

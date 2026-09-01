@@ -76,9 +76,13 @@ class VerifiedObservation:
 class Decision:
     verdict: Verdict
     deployer_key: str
+    token_address: str
+    action_hash: str
     current_risk: RiskLevel
     reason_codes: tuple[str, ...]
     evidence_count: int
+    history: tuple[dict[str, Any], ...]
+    evidence_sources: tuple[str, ...]
     memory_evidence_hash: str | None
     policy_version: str
     decided_at: str
@@ -120,18 +124,32 @@ class MemoryFirewall:
         *,
         verdict: Verdict,
         deployer_key: str,
+        token_address: str,
+        action: dict[str, Any],
         current_risk: RiskLevel,
         reason_codes: tuple[str, ...],
         evidence: list[dict[str, Any]],
     ) -> Decision:
         decided_at = _utc_now()
+        action_hash = _canonical_hash({"action": action})
         evidence_hash = _canonical_hash({"observations": evidence}) if evidence else None
+        evidence_sources = tuple(
+            dict.fromkeys(
+                str(item.get("evidence_uri"))
+                for item in evidence
+                if item.get("evidence_uri")
+            )
+        )
         unsigned = {
             "verdict": verdict,
             "deployer_key": deployer_key,
+            "token_address": token_address,
+            "action_hash": action_hash,
             "current_risk": current_risk,
             "reason_codes": reason_codes,
             "evidence_count": len(evidence),
+            "history": tuple(evidence),
+            "evidence_sources": evidence_sources,
             "memory_evidence_hash": evidence_hash,
             "policy_version": POLICY_VERSION,
             "decided_at": decided_at,
@@ -177,8 +195,10 @@ class MemoryFirewall:
         self,
         *,
         chain: str,
+        token_address: str,
         deployer: str,
         current_risk: RiskLevel,
+        action: dict[str, Any],
         session_id: str,
     ) -> Decision:
         """Return no actionable verdict unless every required memory call succeeds."""
@@ -201,7 +221,13 @@ class MemoryFirewall:
             )
             self.memory.set_state(
                 f"analysis:{session_id}",
-                {"deployer_key": key, "current_risk": current_risk, "status": "reading_memory"},
+                {
+                    "deployer_key": key,
+                    "token_address": token_address,
+                    "action_hash": _canonical_hash({"action": action}),
+                    "current_risk": current_risk,
+                    "status": "reading_memory",
+                },
             )
             record = self._get_deployer(key)
             observations = list(record.get("body", {}).get("observations", [])) if record else []
@@ -232,6 +258,8 @@ class MemoryFirewall:
             decision = self._build_decision(
                 verdict=verdict,
                 deployer_key=key,
+                token_address=token_address,
+                action=action,
                 current_risk=current_risk,
                 reason_codes=reason_codes,
                 evidence=observations,
@@ -250,6 +278,8 @@ class MemoryFirewall:
             return self._build_decision(
                 verdict="MEMORY_REQUIRED",
                 deployer_key=key,
+                token_address=token_address,
+                action=action,
                 current_risk=current_risk,
                 reason_codes=("MEMORY_UNAVAILABLE", error.__class__.__name__),
                 evidence=[],
