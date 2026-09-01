@@ -48,10 +48,12 @@ branch. Do not scroll through unrelated code.
 ## 2:50-3:15 - Base action
 
 Show the executed `recordDecision` interaction and open the Blockscout receipt.
-Match the on-chain memory hash to the fresh-session output.
+Verify the recorded decision hash, then match its on-chain memory-evidence hash
+and policy version to the fresh-session output.
 
-Say: "Base makes the decision auditable outside our process. The receipt binds
-the verdict to the exact memory evidence and policy version."
+Say: "Base makes an executed decision auditable outside our process. This fresh
+run is a separate timestamped decision, but it binds the same verified Sibyl
+memory evidence and policy version."
 
 ## 3:15-3:20 - Close
 

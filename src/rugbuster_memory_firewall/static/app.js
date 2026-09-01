@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+let liveDecision = null;
 
 function short(value) {
   if (!value || value.length < 18) return value;
@@ -34,6 +35,7 @@ $("run-live").addEventListener("click", async () => {
   $("event-list").innerHTML = '<p class="muted">Querying Routescan and Avalanche RPC...</p>';
   try {
     const data = await request("/api/proof/live", { method: "POST" });
+    liveDecision = data.decision;
     $("event-list").innerHTML = data.observations.map((item) => `<p>${item}</p>`).join("");
     $("decision-reason").textContent = `${data.decision.verdict} / ${data.decision.reason_codes.join(", ")} / evidence ${data.decision.evidence_count}`;
     $("final-verdict").textContent = data.decision.verdict;
@@ -63,14 +65,25 @@ $("delete-memory").addEventListener("click", async () => {
 
 $("verify-base").addEventListener("click", async () => {
   const button = $("verify-base");
+  if (!liveDecision) {
+    $("receipt-match").textContent = "Run the live proof before comparing the evidence anchor";
+    return;
+  }
   button.disabled = true;
   button.textContent = "Checking...";
   try {
     const data = await request("/api/proof/base", { method: "POST" });
-    $("receipt-status").textContent = data.status.toUpperCase();
-    $("receipt-status").className = data.status === "verified" ? "clean" : "blocked";
-    $("decision-reason").title = `Decision ${short(data.decoded.decision_hash)} / Memory ${short(data.decoded.memory_evidence_hash)}`;
-    state("step-base", data.status.toUpperCase(), data.status === "verified" ? "complete" : "failed");
+    const memoryMatchesLive = data.decoded.memory_evidence_hash.toLowerCase()
+      === liveDecision.memory_evidence_hash.toLowerCase();
+    const policyMatchesLive = data.decoded.policy_version === liveDecision.policy_version;
+    const verified = data.status === "verified" && memoryMatchesLive && policyMatchesLive;
+    $("receipt-status").textContent = verified ? "VERIFIED" : "MISMATCH";
+    $("receipt-status").className = verified ? "clean" : "blocked";
+    $("receipt-match").textContent = verified
+      ? `MATCH / evidence ${short(data.decoded.memory_evidence_hash)} / policy ${data.decoded.policy_version}`
+      : "The fresh decision does not match the recorded evidence anchor";
+    $("receipt-match").title = `Recorded decision ${data.decoded.decision_hash}; fresh decision ${liveDecision.decision_hash}. Decision hashes include their decision timestamps, so separate executions are intentionally distinct.`;
+    state("step-base", verified ? "VERIFIED" : "MISMATCH", verified ? "complete" : "failed");
   } catch (error) {
     $("receipt-status").textContent = "CHECK FAILED";
     $("receipt-status").className = "blocked";

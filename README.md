@@ -42,7 +42,7 @@ controls.
 | Each historical pool received 50 WAVAX and returned 49.981250056079839479 WAVAX within 3 or 6 seconds | [Live verifier](scripts/verify_real_case.py) re-queries Avalanche RPC instead of trusting the artifact |
 | A fresh Sibyl client changes a clean-current-signal decision to `BLOCK` | [Fresh-session test](tests/test_sibyl_sdk.py#L55) and live verifier output |
 | Removing memory prevents an actionable verdict | [Deletion test](tests/test_sibyl_sdk.py#L109) returns `MEMORY_REQUIRED` |
-| The real decision is anchored on Base Sepolia | [Decision transaction](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca) and [machine-readable receipt](evidence/base-sepolia-decision-receipt.json) |
+| A real decision is anchored on Base Sepolia and a fresh run recalls the same evidence | [Decision transaction](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca), [machine-readable receipt](evidence/base-sepolia-decision-receipt.json), and the console's live memory-hash comparison |
 
 No token name, scanner label, or wallet owner is treated as proof of fraud.
 Policy decisions rely on addresses, transaction receipts, transfer directions,
@@ -94,6 +94,14 @@ The four Sibyl tiers do real work:
 Without Sibyl Memory, RugBuster can still resolve a deployer and inspect current
 signals, but it cannot make the product's claimed history-aware decision. That
 is enforced in code and tested, not left to presentation.
+
+### How memory made this possible
+
+The recall target has clean current signals, so its actionable `BLOCK` cannot
+come from the current scan. Sibyl carries independently verified observations
+from two earlier contracts into a genuinely fresh client session and supplies
+the evidence used by the deterministic policy. Removing that recall path leaves
+the firewall without enough context to decide and forces `MEMORY_REQUIRED`.
 
 ## Reproduce it
 
@@ -165,6 +173,12 @@ A decision hash cannot be overwritten.
 - Deployment: [`0x6b6e...c19f39c`](https://base-sepolia.blockscout.com/tx/0x6b6e8115983575525143661c5e3e488e5f8b0e023b6a69e06ba8743c8c19f39c)
 - Real BLOCK receipt: [`0x13fd...3412eca`](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca)
 - Source verification: [Blockscout](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract) and [Sourcify](https://repo.sourcify.dev/84532/0x5F30276B3A5079E088Ec3072884286de5a868355/)
+
+The recorded decision hash proves the exact earlier contract interaction. A
+new live run has a different decision timestamp and therefore a different
+decision hash; the console instead verifies that both runs bind the same
+Sibyl memory-evidence hash and policy version. It does not present two separate
+executions as the same decision.
 
 ## Prior work declaration
 

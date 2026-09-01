@@ -11,8 +11,9 @@ demo video.
    [`test_sibyl_sdk.py`](tests/test_sibyl_sdk.py#L55).
 3. Open the public Base Sepolia
    [BLOCK receipt](https://base-sepolia.blockscout.com/tx/0x13fdde4a65e27ad8dbe3843439f965eb0293dd630d0884e3b56c62eb43412eca).
-4. Compare its decision and memory hashes with
-   [`base-sepolia-decision-receipt.json`](evidence/base-sepolia-decision-receipt.json).
+4. Compare its recorded decision and memory hashes with
+   [`base-sepolia-decision-receipt.json`](evidence/base-sepolia-decision-receipt.json),
+   then use the console to match the recorded memory hash and policy to a fresh run.
 
 ## Five-minute path
 
@@ -57,7 +58,9 @@ actionable verdict. Run only that proof with:
 Base does actual product work, not decorative deployment. The demo decision is
 written to `DecisionReceiptRegistry`, binding the off-chain policy decision to
 the exact Sibyl memory-evidence hash. The contract is deployed, exercised, and
-source-verified on Base Sepolia.
+source-verified on Base Sepolia. A later fresh run produces its own timestamped
+decision hash; it is linked to the receipt by the same memory-evidence hash and
+policy, not misrepresented as the identical execution.
 
 ## Honest boundaries
 

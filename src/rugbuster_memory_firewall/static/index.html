@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="/assets/styles.css?v=0.1.1">
   </head>
   <body>
     <header class="topbar">
@@ -49,7 +49,7 @@
           <strong class="blocked" id="final-verdict">NOT RUN</strong>
         </div>
         <div>
-          <span>On-chain receipt</span>
+          <span>Evidence anchor</span>
           <strong class="pending" id="receipt-status">CHECK PENDING</strong>
         </div>
       </section>
@@ -89,8 +89,9 @@
               <span class="step-number">03</span>
               <div>
                 <h3>Verify the Base receipt</h3>
-                <p>Decode the executed contract call and match both decision and memory-evidence hashes.</p>
+                <p>Verify the recorded decision, then match its memory-evidence hash and policy to this fresh run.</p>
                 <a id="explorer-link" href="#" target="_blank" rel="noreferrer">Open Blockscout receipt</a>
+                <code id="receipt-match">Run the live proof first</code>
               </div>
               <div class="step-actions">
                 <span class="step-state">READY</span>
@@ -135,6 +136,6 @@
       <span>Deterministic policy. Public evidence. No model-generated allegations.</span>
       <a href="https://github.com/rugbusteraipatrol/rugbuster-memory-firewall" target="_blank" rel="noreferrer">View source</a>
     </footer>
-    <script src="/assets/app.js"></script>
+    <script src="/assets/app.js?v=0.1.1"></script>
   </body>
 </html>
