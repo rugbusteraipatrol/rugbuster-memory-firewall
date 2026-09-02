@@ -14,7 +14,12 @@ from x402.server import x402ResourceServer
 
 from rugbuster_memory_firewall.api import create_app
 from rugbuster_memory_firewall.resolver import ResolvedDeployer
-from rugbuster_memory_firewall.x402 import BASE_MAINNET, X402Settings, _append_settlement
+from rugbuster_memory_firewall.x402 import (
+    BASE_MAINNET,
+    X402Settings,
+    _append_settlement,
+    build_x402_server,
+)
 
 pytestmark = pytest.mark.anyio
 PAY_TO = "0x" + "4" * 40
@@ -98,6 +103,28 @@ async def test_paid_route_returns_real_x402_challenge_without_payment(tmp_path: 
     assert challenge["x402Version"] == 2
     assert challenge["accepts"][0]["network"] == BASE_MAINNET
     assert challenge["accepts"][0]["payTo"] == PAY_TO
+
+
+async def test_cdp_route_can_issue_challenge_without_supported_network_call(
+    tmp_path: Path,
+) -> None:
+    memory = MemoryClient.local(str(tmp_path / "memory.db"))
+    settings = _settings(tmp_path)
+    server, _facilitator = build_x402_server(settings)
+    app = create_app(
+        memory=memory,
+        resolver=FakeResolver(),  # type: ignore[arg-type]
+        x402_settings=settings,
+        x402_server=server,
+    )
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="https://firewall.example.test"
+    ) as client:
+        response = await client.post("/v1/x402/pre-sign", json=_payload())
+    memory._storage.close()  # type: ignore[attr-defined]
+
+    assert response.status_code == 402
+    assert "payment-required" in response.headers
 
 
 async def test_disabled_paid_route_fails_closed(tmp_path: Path) -> None:

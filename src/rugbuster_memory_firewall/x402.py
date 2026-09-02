@@ -18,6 +18,8 @@ from x402.http import AuthHeaders, FacilitatorConfig, HTTPFacilitatorClient, Pay
 from x402.http.middleware.fastapi import PaymentMiddlewareASGI
 from x402.http.types import RouteConfig
 from x402.mechanisms.evm.exact import ExactEvmServerScheme
+from x402.schemas import SupportedResponse
+from x402.schemas.responses import SupportedKind
 from x402.server import x402ResourceServer
 
 CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402"
@@ -108,6 +110,19 @@ class CdpAuthProvider:
         )
 
 
+class CdpFacilitatorClient(HTTPFacilitatorClient):
+    """Declare the configured CDP rail without a fragile startup network call."""
+
+    def __init__(self, config: FacilitatorConfig, network: str) -> None:
+        super().__init__(config)
+        self._network = network
+
+    def get_supported(self) -> SupportedResponse:
+        return SupportedResponse(
+            kinds=[SupportedKind(x402_version=2, scheme="exact", network=self._network)]
+        )
+
+
 def _append_settlement(settings: X402Settings, context: Any) -> None:
     result = context.result
     response_headers = getattr(context.transport_context, "response_headers", {}) or {}
@@ -135,12 +150,13 @@ def _append_settlement(settings: X402Settings, context: Any) -> None:
 
 def build_x402_server(settings: X402Settings) -> tuple[x402ResourceServer, HTTPFacilitatorClient]:
     settings.validate()
-    facilitator = HTTPFacilitatorClient(
+    facilitator = CdpFacilitatorClient(
         FacilitatorConfig(
             url=settings.facilitator_url,
             auth_provider=CdpAuthProvider(settings),
             identifier="coinbase-cdp",
-        )
+        ),
+        settings.network,
     )
     server = x402ResourceServer(facilitator)
     server.register(settings.network, ExactEvmServerScheme())
