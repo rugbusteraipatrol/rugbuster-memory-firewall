@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-from cdp.auth.utils.jwt import JwtOptions, generate_jwt
+from cdp.x402.x402 import create_cdp_auth_headers
 from fastapi import FastAPI
 from x402.http import AuthHeaders, FacilitatorConfig, HTTPFacilitatorClient, PaymentOption
 from x402.http.middleware.fastapi import PaymentMiddlewareASGI
@@ -90,32 +90,21 @@ class X402Settings:
 
 
 class CdpAuthProvider:
-    """Generate short-lived, endpoint-bound CDP JWTs without exposing credentials."""
+    """Adapt Coinbase's official CDP x402 headers to the x402 SDK protocol."""
 
     def __init__(self, settings: X402Settings) -> None:
-        self._settings = settings
-        parsed = urlsplit(settings.facilitator_url)
-        self._host = parsed.netloc
-        self._prefix = parsed.path.rstrip("/")
-
-    def _authorization(self, method: str, suffix: str) -> dict[str, str]:
-        token = generate_jwt(
-            JwtOptions(
-                api_key_id=self._settings.cdp_api_key_id,
-                api_key_secret=self._settings.cdp_api_key_secret,
-                request_method=method,
-                request_host=self._host,
-                request_path=f"{self._prefix}/{suffix}",
-                expires_in=120,
-            )
+        self._create_headers = create_cdp_auth_headers(
+            settings.cdp_api_key_id,
+            settings.cdp_api_key_secret,
         )
-        return {"Authorization": f"Bearer {token}"}
 
     def get_auth_headers(self) -> AuthHeaders:
+        headers = self._create_headers()
         return AuthHeaders(
-            verify=self._authorization("POST", "verify"),
-            settle=self._authorization("POST", "settle"),
-            supported=self._authorization("GET", "supported"),
+            verify=headers["verify"],
+            settle=headers["settle"],
+            supported=headers["supported"],
+            bazaar=headers["list"],
         )
 
 
