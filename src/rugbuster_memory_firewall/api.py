@@ -7,12 +7,14 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel, Field
 from sibyl_memory_client import MemoryClient
 
 from .firewall import Decision, MemoryFirewall
 from .resolver import DeployerResolver, ResolutionError, ResolvedDeployer, same_deployer
+from .seed import seed_verified_case
+from .x402 import X402Settings, install_x402_middleware
 
 
 class PreSignRequest(BaseModel):
@@ -68,14 +70,24 @@ def create_app(
     *,
     memory: MemoryClient | None = None,
     resolver: DeployerResolver | None = None,
+    x402_settings: X402Settings | None = None,
+    x402_server: Any | None = None,
 ) -> FastAPI:
     if memory is None:
         db_path = Path(os.getenv("RUGBUSTER_MEMORY_DB", "~/.sibyl-memory/memory.db")).expanduser()
         memory = MemoryClient.local(str(db_path))
+    seed_path = os.getenv("RUGBUSTER_SEED_VERIFIED_CASE", "").strip()
+    if seed_path:
+        seed_verified_case(memory, Path(seed_path))
+
+    settings = x402_settings or X402Settings.from_env()
+    facilitator: Any | None = None
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         yield
+        if facilitator is not None:
+            await facilitator.aclose()
         storage = getattr(memory, "_storage", None)
         if storage is not None:
             storage.close()
@@ -88,12 +100,7 @@ def create_app(
     firewall = MemoryFirewall(memory)
     deployer_resolver = resolver or DeployerResolver()
 
-    @app.get("/health")
-    def health() -> dict[str, str]:
-        return {"status": "ok", "memory_policy": "required"}
-
-    @app.post("/v1/pre-sign", response_model=PreSignResponse)
-    def pre_sign(request: PreSignRequest) -> PreSignResponse:
+    def evaluate(request: PreSignRequest) -> PreSignResponse:
         try:
             resolved = deployer_resolver.resolve(
                 chain=request.chain, token_address=request.token_address
@@ -115,5 +122,29 @@ def create_app(
             session_id=request.session_id,
         )
         return _response(decision, resolved)
+
+    @app.get("/health")
+    def health() -> dict[str, str]:
+        return {"status": "ok", "memory_policy": "required"}
+
+    @app.post("/v1/pre-sign", response_model=PreSignResponse)
+    def pre_sign(request: PreSignRequest) -> PreSignResponse:
+        return evaluate(request)
+
+    @app.post("/v1/x402/pre-sign", response_model=PreSignResponse)
+    def paid_pre_sign(request: PreSignRequest, response: Response) -> PreSignResponse:
+        if not settings.enabled:
+            raise HTTPException(status_code=503, detail={"code": "X402_NOT_ENABLED"})
+        result = evaluate(request)
+        response.headers["X-RugBuster-Decision-Hash"] = result.decision_hash
+        if result.memory_evidence_hash:
+            response.headers["X-RugBuster-Memory-Evidence-Hash"] = result.memory_evidence_hash
+        return result
+
+    @app.get("/.well-known/x402")
+    def x402_status() -> dict[str, Any]:
+        return settings.public_status()
+
+    facilitator = install_x402_middleware(app, settings, server=x402_server)
 
     return app

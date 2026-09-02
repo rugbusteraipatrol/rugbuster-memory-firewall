@@ -33,3 +33,6 @@ jobs:
 
       - name: Run deterministic judge suite
         run: python scripts/judge_check.py
+
+      - name: Build production container
+        run: docker build --tag rugbuster-memory-firewall:ci .

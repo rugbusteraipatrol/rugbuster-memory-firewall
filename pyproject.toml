@@ -13,6 +13,8 @@ dependencies = [
   "httpx==0.28.1",
   "sibyl-memory-client==0.8.0",
   "uvicorn==0.52.4",
+  "x402[evm,fastapi]==2.21.0",
+  "cdp-sdk==1.48.1",
 ]
 
 [project.optional-dependencies]

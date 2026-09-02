@@ -170,6 +170,27 @@ The response contains the verdict, stable reason codes, recalled history,
 resolver provenance, action hash, memory-evidence hash, decision hash, policy
 version, and optional Base receipt URL.
 
+### Paid x402 agent endpoint
+
+`POST /v1/x402/pre-sign` exposes the same memory-backed decision as an x402 v2
+resource. In production it charges `$0.01` USDC on Base mainnet through the
+Coinbase CDP facilitator. The free route remains available for reproducible
+judging; the paid route proves that another agent can purchase the decision as
+a service.
+
+Configuration is documented in [`.env.example`](.env.example). With x402
+enabled, `GET /.well-known/x402` publishes the route, price, network, payee,
+and resource URL. An append-only runtime log records successful payment
+transactions together with the response's decision and memory-evidence hashes,
+without storing payment signatures or credentials. See the
+[independent pilot checklist](docs/X402-PILOT.md).
+
+The provided Docker image seeds only the committed Avalanche case used by the
+judge demo. The case can be re-queried from public chain data with
+`scripts/judge_check.py --live`; seeding it twice does not duplicate its two
+observations. A persistent `/data` volume keeps both Sibyl Memory and settlement
+records across deploys.
+
 ## Base integration
 
 [`DecisionReceiptRegistry.sol`](contracts/DecisionReceiptRegistry.sol) records
