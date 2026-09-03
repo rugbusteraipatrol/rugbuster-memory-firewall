@@ -146,3 +146,16 @@ async def test_health_declares_memory_required(tmp_path: Path) -> None:
     _close(memory)
 
     assert response.json() == {"status": "ok", "memory_policy": "required"}
+
+
+async def test_root_serves_judge_console(tmp_path: Path) -> None:
+    memory = MemoryClient.local(str(tmp_path / "memory.db"))
+    async with _client(create_app(memory=memory, resolver=FakeResolver())) as client:  # type: ignore[arg-type]
+        response = await client.get("/")
+        summary = await client.get("/api/summary")
+    _close(memory)
+
+    assert response.status_code == 200
+    assert "RugBuster Judge Console" in response.text
+    assert summary.status_code == 200
+    assert summary.json()["case_id"] == "avax-repeat-deployer-2026-06-23"

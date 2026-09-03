@@ -13,6 +13,7 @@ RUN apt-get update \
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 COPY evidence ./evidence
+COPY scripts ./scripts
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN python -m pip install --no-cache-dir .
 
@@ -22,6 +23,7 @@ RUN useradd --create-home --uid 10001 rugbuster \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENV RUGBUSTER_MEMORY_DB=/data/memory.db \
+    RUGBUSTER_PROJECT_ROOT=/app \
     RUGBUSTER_SEED_VERIFIED_CASE=/app/evidence/avax-repeat-deployer-case.json \
     RUGBUSTER_X402_SETTLEMENT_LOG=/data/x402-settlements.jsonl
 

@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel, Field
 from sibyl_memory_client import MemoryClient
 
+from .demo import create_demo_app
 from .firewall import Decision, MemoryFirewall
 from .resolver import DeployerResolver, ResolutionError, ResolvedDeployer, same_deployer
 from .seed import seed_verified_case
@@ -146,5 +147,6 @@ def create_app(
         return settings.public_status()
 
     facilitator = install_x402_middleware(app, settings, server=x402_server)
+    app.mount("/", create_demo_app(), name="judge-console")
 
     return app

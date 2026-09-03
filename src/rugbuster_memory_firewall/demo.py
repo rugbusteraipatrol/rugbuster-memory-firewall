@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -15,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .firewall import MemoryFirewall
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.getenv("RUGBUSTER_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 STATIC = Path(__file__).with_name("static")
 EVIDENCE = ROOT / "evidence"
 BASE_RPC = "https://sepolia.base.org"
