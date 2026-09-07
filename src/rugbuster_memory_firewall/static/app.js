@@ -8,7 +8,7 @@ function short(value) {
 
 function state(stepId, label, kind = "complete") {
   const step = $(stepId);
-  step.classList.remove("complete", "failed");
+  step.classList.remove("complete", "failed", "pending");
   step.classList.add(kind);
   step.querySelector(".step-state").textContent = label;
 }
@@ -22,7 +22,6 @@ async function request(path, options = {}) {
 async function loadSummary() {
   const data = await request("/api/summary");
   $("case-id").textContent = data.case_id;
-  $("event-count").textContent = `${data.historical_events.length} CRITICAL`;
   $("deployer").textContent = data.deployer;
   $("recall-target").textContent = data.recall_target.token_address;
   $("explorer-link").href = data.receipt.explorer_tx;
@@ -32,21 +31,36 @@ $("run-live").addEventListener("click", async () => {
   const button = $("run-live");
   button.disabled = true;
   button.textContent = "Verifying...";
+  liveDecision = null;
+  $("final-verdict").textContent = "PENDING";
+  $("event-count").textContent = "PENDING";
+  $("decision-reason").textContent = "No decision yet";
+  $("receipt-status").textContent = "CHECK PENDING";
+  $("receipt-status").className = "pending";
+  $("receipt-match").textContent = "Run the live proof first";
+  for (const id of ["step-evidence", "step-recall", "step-base"]) {
+    state(id, "READY", "pending");
+  }
+  $("verify-base").disabled = true;
   $("event-list").innerHTML = '<p class="muted">Querying Routescan and Avalanche RPC...</p>';
   try {
     const data = await request("/api/proof/live", { method: "POST" });
     liveDecision = data.decision;
+    $("event-count").textContent = `${data.decision.evidence_count} CRITICAL`;
     $("event-list").innerHTML = data.observations.map((item) => `<p>${item}</p>`).join("");
     $("decision-reason").textContent = `${data.decision.verdict} / ${data.decision.reason_codes.join(", ")} / evidence ${data.decision.evidence_count}`;
     $("final-verdict").textContent = data.decision.verdict;
     state("step-evidence", "VERIFIED");
     state("step-recall", "BLOCKED");
   } catch (error) {
+    $("final-verdict").textContent = "UNAVAILABLE";
+    $("event-count").textContent = "UNAVAILABLE";
     $("event-list").innerHTML = '<p class="muted">Live proof failed. Check network access and retry.</p>';
     state("step-evidence", "FAILED", "failed");
   } finally {
     button.disabled = false;
     button.textContent = "Run live proof";
+    $("verify-base").disabled = !liveDecision;
   }
 });
 
@@ -71,6 +85,7 @@ $("verify-base").addEventListener("click", async () => {
   }
   button.disabled = true;
   button.textContent = "Checking...";
+  $("run-live").disabled = true;
   try {
     const data = await request("/api/proof/base", { method: "POST" });
     const memoryMatchesLive = data.decoded.memory_evidence_hash.toLowerCase()
@@ -91,6 +106,7 @@ $("verify-base").addEventListener("click", async () => {
   } finally {
     button.disabled = false;
     button.textContent = "Verify";
+    $("run-live").disabled = false;
   }
 });
 

@@ -5,7 +5,7 @@
 [![Base Sepolia](https://img.shields.io/badge/Base_Sepolia-verified-0052ff)](https://base-sepolia.blockscout.com/address/0x5F30276B3A5079E088Ec3072884286de5a868355?tab=contract)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f2c94c.svg)](LICENSE)
 
-**A pre-sign safety agent that blocks actions a stateless scanner would miss.**
+**A memory-backed pre-sign policy with verifiable deployer evidence.**
 
 A token can look clean now while its deployer has harmful verified history on
 other contracts. RugBuster resolves the deployer, recalls that history from a
@@ -97,8 +97,10 @@ is enforced in code and tested, not left to presentation.
 
 ### How memory made this possible
 
-The recall target has clean current signals, so its actionable `BLOCK` cannot
-come from the current scan. Sibyl carries independently verified observations
+The demo supplies `current_risk="clean"` as a controlled input, not as an
+independently verified clean scan. Its `BLOCK` therefore demonstrates the
+contribution of recalled history while the current input stays fixed.
+Sibyl carries independently verified observations
 from two earlier contracts into a genuinely fresh client session and supplies
 the evidence used by the deterministic policy. Removing that recall path leaves
 the firewall without enough context to decide and forces `MEMORY_REQUIRED`.
@@ -143,7 +145,7 @@ cross-session case. The live path requires network access but no paid API key.
 Expected high-signal output:
 
 ```text
-26 passed
+35 passed
 4 passing
 deletion_gate=PASSED verdict=MEMORY_REQUIRED
 fresh_session_decision={"verdict":"BLOCK","reason_codes":["BLOCK_REPEAT_DEPLOYER"],"evidence_count":2,...}

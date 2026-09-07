@@ -52,7 +52,7 @@ def main() -> int:
     run("Base contract tests", [npm, "run", "base:test"])
     verify_deletion_gate()
     if args.live:
-        run("Live Avalanche and fresh-session proof", [sys.executable, "scripts/verify_real_case.py"])
+        run("Live Avalanche and separate-process recall", [sys.executable, "scripts/process_recall_proof.py"])
     print("\njudge_check=PASSED")
     return 0
 

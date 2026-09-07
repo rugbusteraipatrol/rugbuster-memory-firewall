@@ -43,6 +43,12 @@ the real Avalanche verification. The real verifier:
 
 ## Gate question
 
+For a separate OS-process recall proof with a UTC timestamp, commit and dirty-tree
+indicator, run `python scripts/process_recall_proof.py` in the installed environment.
+It re-queries the real case, exits the writer process, and recalls from a new
+reader process. The current-risk input is controlled at `clean`, not independently
+scanned or certified safe.
+
 **Delete Sibyl Memory. Does the core product still work?**
 
 No. `MemoryFirewall(None)` returns `MEMORY_REQUIRED`. It cannot return an

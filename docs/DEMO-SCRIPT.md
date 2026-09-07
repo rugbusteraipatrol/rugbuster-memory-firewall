@@ -5,9 +5,10 @@ Keep a UTC clock and the current Git commit visible in the terminal.
 
 ## 0:00-0:25 - Problem
 
-"A token can look clean right now while its deployer has harmful verified
-history on other contracts. Stateless scanners forget that history between
-sessions. RugBuster Memory Firewall remembers it before an action is signed."
+"A current token check and a deployer's historical behavior answer different
+questions. RugBuster Memory Firewall recalls verified on-chain observations
+before issuing a pre-sign policy decision. This demo holds the current-risk
+input at clean to isolate the effect of memory; it is not a clean security audit."
 
 Show the proposed action and the clean current signal. Do not begin with slides.
 
@@ -28,7 +29,7 @@ In one continuous segment:
 5. Analyze the different recall-target token with clean current signals.
 6. Hold on the output: `BLOCK`, `BLOCK_REPEAT_DEPLOYER`, evidence count `2`.
 
-Say: "The current signal is clean. The decision changes only because the fresh
+Say: "The current-risk input is held at clean. The decision changes because the fresh
 session recalled verified deployer history from Sibyl Memory."
 
 ## 1:55-2:20 - Deletion test
